@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 20% 20%, #f8fafc, #eef2ff 30%, #f8fafc 60%);
+}
+
+button {
+    font-family: inherit;
+}
