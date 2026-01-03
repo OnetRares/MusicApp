@@ -1,0 +1,28 @@
+{
+    "name": "musicapp-server",
+    "version": "1.0.0",
+    "description": "Backend API for MusicApp with SQLite database",
+    "main": "api.js",
+    "scripts": {
+        "start": "node api.js",
+        "init": "node scripts/init-db.js",
+        "seed": "node scripts/seed-db.js",
+        "dev": "nodemon api.js"
+    },
+    "keywords": [
+        "music",
+        "api",
+        "sqlite",
+        "express"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5",
+        "sqlite3": "^5.1.7"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.2"
+    }
+}
