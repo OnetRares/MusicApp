@@ -10,8 +10,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Initialize database
-db.initialize().catch(console.error);
+// Connect to database
+try {
+    db.connect();
+} catch (error) {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+}
 
 // ==================== SONGS ENDPOINTS ====================
 
