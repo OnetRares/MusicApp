@@ -79,6 +79,28 @@ export class MusicService {
         }
     }
 
+    async getLikedSongs(): Promise<Song[]> {
+        try {
+            return await firstValueFrom(
+                this.http.get<Song[]>(`${this.apiUrl}/likes`)
+            );
+        } catch (err) {
+            console.error('Error loading liked songs:', err);
+            return [];
+        }
+    }
+
+    async getPlaylists(): Promise<any[]> {
+        try {
+            return await firstValueFrom(
+                this.http.get<any[]>(`${this.apiUrl}/playlists`)
+            );
+        } catch (err) {
+            console.error('Error loading playlists:', err);
+            return [];
+        }
+    }
+
     formatDuration(seconds: number): string {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;

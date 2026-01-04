@@ -13,6 +13,9 @@ export class App {
   protected readonly search = signal('');
   protected readonly moodFilter = signal<Mood | 'All'>('All');
   protected readonly selected = signal<Song | null>(null);
+  protected readonly showProfile = signal(false);
+  protected readonly likedSongs = signal<Song[]>([]);
+  protected readonly userPlaylists = signal<any[]>([]);
 
   protected readonly moods = ['All', 'Chill', 'Focus', 'Energy', 'Classic'] as const;
 
@@ -59,5 +62,28 @@ export class App {
 
   protected formatDuration(seconds: number): string {
     return this.musicService.formatDuration(seconds);
+  }
+
+  protected toggleProfile(): void {
+    const isOpen = this.showProfile();
+    this.showProfile.set(!isOpen);
+
+    if (!isOpen) {
+      // Load profile data when opening
+      this.loadProfileData();
+    }
+  }
+
+  protected async loadProfileData(): Promise<void> {
+    try {
+      const [liked, playlists] = await Promise.all([
+        this.musicService.getLikedSongs(),
+        this.musicService.getPlaylists()
+      ]);
+      this.likedSongs.set(liked);
+      this.userPlaylists.set(playlists);
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+    }
   }
 }

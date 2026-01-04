@@ -57,10 +57,10 @@
             }
           </div>
         </div>
-        <div class="user-pill">
-          <div class="avatar">{{ selected()?.artist_name?.slice(0, 1) || '?' }}</div>
+        <button type="button" class="user-pill" (click)="toggleProfile()">
+          <div class="avatar">D</div>
           <span>Now Playing</span>
-        </div>
+        </button>
       </header>
 
       <main class="layout">
@@ -140,6 +140,87 @@
         </section>
       </main>
     </div>
+
+    <!-- Profile Panel -->
+    @if (showProfile()) {
+    <aside class="profile-panel">
+      <div class="profile-header">
+        <button type="button" class="close-btn" (click)="toggleProfile()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </button>
+        <div class="profile-info">
+          <div class="profile-avatar">D</div>
+          <h2>Demo User</h2>
+          <p class="meta">demo@musicapp.com</p>
+        </div>
+      </div>
+
+      <div class="profile-content">
+        <!-- Currently Playing -->
+        @if (selected(); as song) {
+        <section class="profile-section">
+          <h3>Currently Playing</h3>
+          <div class="now-playing-card">
+            <div class="cover-art">{{ song.title.slice(0, 1) }}</div>
+            <div class="song-info">
+              <p class="title">{{ song.title }}</p>
+              <p class="meta">{{ song.artist_name }}</p>
+              <p class="meta">{{ song.album_title }}</p>
+            </div>
+            <button type="button" class="icon-btn" (click)="toggleLike(song.id)">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path [attr.fill]="song.is_liked ? 'currentColor' : 'none'"
+                  [attr.stroke]="song.is_liked ? 'currentColor' : 'currentColor'"
+                  [attr.stroke-width]="song.is_liked ? 0 : 1.5"
+                  d="M12.1 8.64 12 8.77l-.1-.13C10.14 6.6 7.1 6.24 5.05 8.28c-2.06 2.04-2.06 5.36 0 7.4l6.23 6.23c.4.4 1.05.4 1.45 0l6.23-6.23c2.06-2.04 2.06-5.36 0-7.4-2.05-2.04-5.09-1.68-6.86.36Z" />
+              </svg>
+            </button>
+          </div>
+        </section>
+        }
+
+        <!-- Playlists -->
+        <section class="profile-section">
+          <h3>My Playlists</h3>
+          @if (userPlaylists().length === 0) {
+          <p class="empty">No playlists yet</p>
+          } @else {
+          <div class="playlist-grid">
+            @for (playlist of userPlaylists(); track playlist.id) {
+            <div class="playlist-card">
+              <div class="playlist-cover">{{ playlist.name.slice(0, 1) }}</div>
+              <p class="playlist-name">{{ playlist.name }}</p>
+              <p class="meta">{{ playlist.description }}</p>
+            </div>
+            }
+          </div>
+          }
+        </section>
+
+        <!-- Liked Songs -->
+        <section class="profile-section">
+          <h3>Liked Songs <span class="count">{{ likedSongs().length }}</span></h3>
+          @if (likedSongs().length === 0) {
+          <p class="empty">No liked songs yet</p>
+          } @else {
+          <div class="liked-list">
+            @for (song of likedSongs(); track song.id) {
+            <button type="button" class="song-row" (click)="selectSong(song); toggleProfile()">
+              <div class="song-details">
+                <p class="title">{{ song.title }}</p>
+                <p class="meta">{{ song.artist_name }} • {{ song.album_title }}</p>
+              </div>
+              <span class="length">{{ formatDuration(song.duration) }}</span>
+            </button>
+            }
+          </div>
+          }
+        </section>
+      </div>
+    </aside>
+    }
   </div>
 
   <footer class="player-bar">
