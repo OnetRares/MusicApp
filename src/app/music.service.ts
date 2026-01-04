@@ -16,6 +16,16 @@ export interface Song {
     youtube_id: string;
 }
 
+export interface Playlist {
+    id: number;
+    name: string;
+    description?: string;
+    is_public: number;
+    owner_username: string;
+    created_at: string;
+    songs?: Song[];
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -25,8 +35,14 @@ export class MusicService {
     readonly songs = signal<Song[]>([]);
     readonly loading = signal(false);
     readonly error = signal<string | null>(null);
+    readonly selectedSong = signal<Song | null>(null);
 
     constructor(private http: HttpClient) { }
+
+    selectSong(song: Song): void {
+        this.selectedSong.set(song);
+        this.recordPlay(song.id);
+    }
 
     async loadSongs(mood?: string, search?: string): Promise<void> {
         this.loading.set(true);
@@ -105,5 +121,31 @@ export class MusicService {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async addSongToPlaylist(playlistId: number, songId: number): Promise<void> {
+        try {
+            await firstValueFrom(
+                this.http.post(`${this.apiUrl}/playlists/${playlistId}/songs`, { songId })
+            );
+        } catch (err) {
+            console.error('Error adding song to playlist:', err);
+            throw err;
+        }
+    }
+
+    async createPlaylist(name: string, description: string = '', isPublic: boolean = true): Promise<{ id: number }> {
+        try {
+            return await firstValueFrom(
+                this.http.post<{ id: number }>(`${this.apiUrl}/playlists`, {
+                    name,
+                    description,
+                    is_public: isPublic
+                })
+            );
+        } catch (err) {
+            console.error('Error creating playlist:', err);
+            throw err;
+        }
     }
 }

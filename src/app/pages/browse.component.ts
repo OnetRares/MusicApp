@@ -66,6 +66,28 @@ import { DurationPipe } from '../pipes/duration.pipe';
                   d="M12.1 8.64 12 8.77l-.1-.13C10.14 6.6 7.1 6.24 5.05 8.28c-2.06 2.04-2.06 5.36 0 7.4l6.23 6.23c.4.4 1.05.4 1.45 0l6.23-6.23c2.06-2.04 2.06-5.36 0-7.4-2.05-2.04-5.09-1.68-6.86.36Z" />
               </svg>
             </button>
+            <div class="playlist-menu">
+              <button type="button" class="icon-btn" (click)="$event.stopPropagation(); togglePlaylistMenu(song.id)" title="Add to playlist">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                </svg>
+              </button>
+              @if (showPlaylistMenu() === song.id) {
+                <div class="playlist-dropdown" (click)="$event.stopPropagation()">
+                  <h4>Add to Playlist</h4>
+                  @if (playlists().length > 0) {
+                    @for (playlist of playlists(); track playlist.id) {
+                      <button type="button" class="playlist-item" (click)="addToPlaylist(playlist.id, song.id)">
+                        {{ playlist.name }}
+                      </button>
+                    }
+                  } @else {
+                    <p class="no-playlists">No playlists yet</p>
+                  }
+                  <button type="button" class="close-btn" (click)="closePlaylistMenu()">Close</button>
+                </div>
+              }
+            </div>
           </button>
           }
         </div>
@@ -151,8 +173,12 @@ import { DurationPipe } from '../pipes/duration.pipe';
     }
 
     .pill.small {
-      padding: 0.25rem 0.75rem;
-      font-size: 0.85rem;
+      padding: 0.375rem 0.875rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(29, 185, 84, 0.1);
+      border-color: rgba(29, 185, 84, 0.2);
+      color: #1ed760;
     }
 
     .loading, .empty-state, .error-state {
@@ -209,34 +235,41 @@ import { DurationPipe } from '../pipes/duration.pipe';
 
     .row {
       background: #181818;
-      border: 1px solid #1f1f1f;
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       padding: 1rem;
       display: grid;
-      grid-template-columns: auto 1fr auto auto auto;
+      grid-template-columns: auto 1fr auto auto auto auto;
       gap: 1rem;
       align-items: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
       text-align: left;
       width: 100%;
+      position: relative;
     }
 
     .row:hover {
-      background: #282828;
-      border-color: #1db954;
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .row:active {
+      transform: translateY(0);
     }
 
     .cover-mini {
-      width: 48px;
-      height: 48px;
-      border-radius: 4px;
+      width: 56px;
+      height: 56px;
+      border-radius: 6px;
       background: linear-gradient(135deg, #1db954, #1ed760);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
+      font-size: 1.25rem;
       color: white;
+      box-shadow: 0 2px 8px rgba(29, 185, 84, 0.3);
     }
 
     .details {
@@ -264,21 +297,140 @@ import { DurationPipe } from '../pipes/duration.pipe';
     .icon-btn {
       background: transparent;
       border: none;
-      color: #a3a3a3;
+      color: rgba(255, 255, 255, 0.6);
       cursor: pointer;
       padding: 0.5rem;
       border-radius: 50%;
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .icon-btn:hover {
       color: #1db954;
       background: rgba(29, 185, 84, 0.1);
+      transform: scale(1.1);
     }
 
     .icon-btn svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .playlist-menu {
+      position: relative;
+    }
+
+    .playlist-dropdown {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 0.5rem);
+      background: #282828;
+      border: 1px solid #404040;
+      border-radius: 12px;
+      padding: 0.75rem;
+      min-width: 240px;
+      max-height: 350px;
+      overflow-y: auto;
+      z-index: 10000;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+    }
+
+    .playlist-dropdown h4 {
+      margin: 0 0 0.75rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: #b3b3b3;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .playlist-item {
+      width: 100%;
+      text-align: left;
+      padding: 0.875rem 0.75rem;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .playlist-item:hover {
+      background: rgba(29, 185, 84, 0.1);
+      color: #1db954;
+      transform: translateX(4px);
+    }
+
+    .playlist-item::before {
+      content: '🎵';
+      font-size: 1.2rem;
+      opacity: 0.7;
+    }
+
+    .no-playlists {
+      padding: 1.5rem 0.75rem;
+      color: #b3b3b3;
+      font-size: 0.875rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .close-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #1db954;
+      color: #1db954;
+    }
+
+    @media (max-width: 768px) {
+      .playlist-dropdown {
+        right: auto;
+        left: 0;
+        min-width: 200px;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
     }
   `]
 })
@@ -289,10 +441,12 @@ export class BrowseComponent implements OnInit {
     protected readonly search = signal('');
     protected readonly moodFilter = signal<Mood | 'All'>('All');
     protected readonly moods = ['All', 'Chill', 'Focus', 'Energy', 'Classic'] as const;
+    protected readonly showPlaylistMenu = signal<number | null>(null);
+    protected readonly playlists = signal<any[]>([]);
 
     protected readonly filteredSongs = computed(() => this.musicService.songs());
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
         // Check for mood query param
         this.route.queryParams.subscribe(params => {
             if (params['mood']) {
@@ -301,6 +455,12 @@ export class BrowseComponent implements OnInit {
         });
 
         this.loadSongs();
+        await this.loadPlaylists();
+    }
+
+    private async loadPlaylists(): Promise<void> {
+        const data = await this.musicService.getPlaylists();
+        this.playlists.set(data);
     }
 
     private loadSongs(): void {
@@ -332,5 +492,71 @@ export class BrowseComponent implements OnInit {
 
     protected retry(): void {
         this.loadSongs();
+    }
+
+    protected togglePlaylistMenu(songId: number): void {
+        if (this.showPlaylistMenu() === songId) {
+            this.showPlaylistMenu.set(null);
+        } else {
+            this.showPlaylistMenu.set(songId);
+        }
+    }
+
+    protected closePlaylistMenu(): void {
+        this.showPlaylistMenu.set(null);
+    }
+
+    protected async addToPlaylist(playlistId: number, songId: number): Promise<void> {
+        try {
+            await this.musicService.addSongToPlaylist(playlistId, songId);
+            this.closePlaylistMenu();
+
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: #1db954;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                z-index: 10001;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = '✓ Added to playlist!';
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        } catch (err: any) {
+            console.error('Error adding song to playlist:', err);
+            this.closePlaylistMenu();
+
+            // Show error notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                background: #ff4444;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                z-index: 10001;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = '✗ Song already in playlist';
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
     }
 }

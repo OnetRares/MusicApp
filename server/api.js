@@ -171,11 +171,13 @@ app.get('/api/playlists/:id', async (req, res) => {
         }
 
         const songs = await db.query(`
-      SELECT s.*, a.name as artist_name, al.title as album_title, ps.position
+      SELECT s.*, a.name as artist_name, al.title as album_title, ps.position,
+             COALESCE(ul.song_id IS NOT NULL, 0) as is_liked
       FROM playlist_songs ps
       JOIN songs s ON ps.song_id = s.id
       JOIN artists a ON s.artist_id = a.id
       LEFT JOIN albums al ON s.album_id = al.id
+      LEFT JOIN user_likes ul ON s.id = ul.song_id AND ul.user_id = 1
       WHERE ps.playlist_id = ?
       ORDER BY ps.position
     `, [req.params.id]);
@@ -185,6 +187,77 @@ app.get('/api/playlists/:id', async (req, res) => {
     } catch (error) {
         console.error('Error fetching playlist:', error);
         res.status(500).json({ error: 'Failed to fetch playlist' });
+    }
+});
+
+// Add song to playlist
+app.post('/api/playlists/:id/songs', async (req, res) => {
+    try {
+        const playlistId = req.params.id;
+        const { songId } = req.body;
+
+        // Check if song already in playlist
+        const existing = await db.get(
+            'SELECT id FROM playlist_songs WHERE playlist_id = ? AND song_id = ?',
+            [playlistId, songId]
+        );
+
+        if (existing) {
+            return res.status(400).json({ error: 'Song already in playlist' });
+        }
+
+        // Get next position
+        const lastPosition = await db.get(
+            'SELECT MAX(position) as max_pos FROM playlist_songs WHERE playlist_id = ?',
+            [playlistId]
+        );
+        const nextPosition = (lastPosition?.max_pos || 0) + 1;
+
+        // Add song to playlist
+        await db.run(
+            'INSERT INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)',
+            [playlistId, songId, nextPosition]
+        );
+
+        res.json({ message: 'Song added to playlist', position: nextPosition });
+    } catch (error) {
+        console.error('Error adding song to playlist:', error);
+        res.status(500).json({ error: 'Failed to add song to playlist' });
+    }
+});
+
+// Remove song from playlist
+app.delete('/api/playlists/:id/songs/:songId', async (req, res) => {
+    try {
+        const { id: playlistId, songId } = req.params;
+
+        await db.run(
+            'DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?',
+            [playlistId, songId]
+        );
+
+        res.json({ message: 'Song removed from playlist' });
+    } catch (error) {
+        console.error('Error removing song from playlist:', error);
+        res.status(500).json({ error: 'Failed to remove song from playlist' });
+    }
+});
+
+// Create new playlist
+app.post('/api/playlists', async (req, res) => {
+    try {
+        const userId = 1; // Default user for demo
+        const { name, description, is_public } = req.body;
+
+        const result = await db.run(
+            'INSERT INTO playlists (user_id, name, description, is_public) VALUES (?, ?, ?, ?)',
+            [userId, name, description || '', is_public ? 1 : 0]
+        );
+
+        res.status(201).json({ id: result.id, message: 'Playlist created successfully' });
+    } catch (error) {
+        console.error('Error creating playlist:', error);
+        res.status(500).json({ error: 'Failed to create playlist' });
     }
 });
 

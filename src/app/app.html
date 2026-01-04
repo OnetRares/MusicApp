@@ -30,10 +30,19 @@
       </nav>
       <div class="sidebar-section">
         <p class="eyebrow">Playlists</p>
-        <div class="pill-group vertical">
-          <span class="pill small">Daily Mix</span>
-          <span class="pill small">Focus</span>
-          <span class="pill small">Energy</span>
+        <div class="playlist-links">
+          @if (userPlaylists().length > 0) {
+          @for (playlist of userPlaylists(); track playlist.id) {
+          <a [routerLink]="['/playlist', playlist.id]" routerLinkActive="active" class="playlist-link">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 4h12v2H6zm-2 7h16v2H4zm4 7h8v2H8z" fill="currentColor" />
+            </svg>
+            <span>{{ playlist.name }}</span>
+          </a>
+          }
+          } @else {
+          <p class="no-playlists">No playlists yet</p>
+          }
         </div>
       </div>
     </aside>

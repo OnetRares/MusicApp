@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MusicService, type Song } from './music.service';
 
@@ -8,13 +8,26 @@ import { MusicService, type Song } from './music.service';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
+export class App implements OnInit {
   protected readonly musicService = inject(MusicService);
 
   protected readonly selected = signal<Song | null>(null);
   protected readonly showProfile = signal(false);
   protected readonly likedSongs = signal<Song[]>([]);
   protected readonly userPlaylists = signal<any[]>([]);
+
+  ngOnInit(): void {
+    this.loadPlaylists();
+  }
+
+  private async loadPlaylists(): Promise<void> {
+    try {
+      const playlists = await this.musicService.getPlaylists();
+      this.userPlaylists.set(playlists);
+    } catch (error) {
+      console.error('Error loading playlists:', error);
+    }
+  }
 
   protected selectSong(song: Song): void {
     this.selected.set(song);

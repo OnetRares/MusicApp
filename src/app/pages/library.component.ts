@@ -1,12 +1,13 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MusicService, type Song } from '../music.service';
 import { DurationPipe } from '../pipes/duration.pipe';
 
 @Component({
     selector: 'app-library',
     standalone: true,
-    imports: [FormsModule, DurationPipe],
+    imports: [FormsModule, DurationPipe, RouterLink],
     template: `
     <div class="library-page">
       <header class="page-header">
@@ -86,14 +87,14 @@ import { DurationPipe } from '../pipes/duration.pipe';
         } @else {
         <div class="playlist-grid">
           @for (playlist of playlists(); track playlist.id) {
-          <div class="playlist-card">
+          <a [routerLink]="['/playlist', playlist.id]" class="playlist-card">
             <div class="playlist-cover">{{ playlist.name.slice(0, 1) }}</div>
             <div class="playlist-info">
               <h3>{{ playlist.name }}</h3>
               <p class="meta">{{ playlist.description || 'No description' }}</p>
               <p class="meta-small">By {{ playlist.owner_username }}</p>
             </div>
-          </div>
+          </a>
           }
         </div>
         }
@@ -354,6 +355,9 @@ import { DurationPipe } from '../pipes/duration.pipe';
       padding: 1rem;
       cursor: pointer;
       transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
 
     .playlist-card:hover {
@@ -431,14 +435,21 @@ export class LibraryComponent implements OnInit {
         }
     }
 
-    protected createPlaylist(): void {
+    protected async createPlaylist(): Promise<void> {
         if (!this.newPlaylistName.trim()) return;
 
-        // TODO: Add API call to create playlist
-        console.log('Creating playlist:', this.newPlaylistName, this.newPlaylistDesc);
+        try {
+            await this.musicService.createPlaylist(this.newPlaylistName, this.newPlaylistDesc);
 
-        this.showCreatePlaylist = false;
-        this.newPlaylistName = '';
-        this.newPlaylistDesc = '';
+            this.showCreatePlaylist = false;
+            this.newPlaylistName = '';
+            this.newPlaylistDesc = '';
+
+            // Reload playlists
+            await this.loadData();
+        } catch (error) {
+            console.error('Error creating playlist:', error);
+            alert('Failed to create playlist');
+        }
     }
 }
