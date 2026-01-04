@@ -237,7 +237,6 @@ export class HomeComponent {
     }
 
     protected playSong(song: Song): void {
-        // Emit event or navigate to browse with song selected
-        console.log('Playing:', song);
+        this.musicService.selectSong(song);
     }
 }

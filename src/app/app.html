@@ -78,7 +78,7 @@
 
       <div class="profile-content">
         <!-- Currently Playing -->
-        @if (selected(); as song) {
+        @if (musicService.selectedSong(); as song) {
         <section class="profile-section">
           <h3>Currently Playing</h3>
           <div class="now-playing-card">
@@ -143,40 +143,56 @@
   </div>
 
   <footer class="player-bar">
-    @if (selected(); as song) {
-    <div class="player-meta">
-      <div class="mini-cover">{{ song.title.slice(0, 1) }}</div>
-      <div>
-        <p class="title">{{ song.title }}</p>
-        <p class="meta">{{ song.artist_name }}</p>
+    @if (musicService.selectedSong(); as song) {
+    <div class="player-container">
+      <!-- YouTube Player (Hidden but rendered) -->
+      <div style="position: fixed; top: -400px; left: 0; width: 200px; height: 200px; overflow: hidden; z-index: -1;">
+        <div #playerContainer id="youtube-player"></div>
+      </div>
+
+      <div class="player-info">
+        <div class="mini-cover">{{ song.title.slice(0, 1) }}</div>
+        <div class="song-meta">
+          <p class="title">{{ song.title }}</p>
+          <p class="meta">{{ song.artist_name }}</p>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <button type="button" (click)="previousTrack()" aria-label="Previous">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="m14 6-8 6 8 6V6zm2 0h2v12h-2V6z" />
+          </svg>
+        </button>
+        <button type="button" class="play-btn" [class.playing]="isPlaying()" (click)="togglePlayPause()"
+          aria-label="Play/Pause">
+          @if (isPlaying()) {
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+          </svg>
+          } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M8 5v14l11-7z" />
+          </svg>
+          }
+        </button>
+        <button type="button" (click)="nextTrack()" aria-label="Next">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="m10 6 8 6-8 6V6zm-2 0H6v12h2V6z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="player-extra">
+        <button type="button" class="like-btn" [class.liked]="song.is_liked" (click)="toggleLike(song.id)"
+          aria-label="Toggle like">
+          {{ song.is_liked ? '💚' : '🤍' }}
+        </button>
       </div>
     </div>
-    <div class="player-controls">
-      <button type="button" aria-label="Previous">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m14 6-8 6 8 6V6zm2 0h2v12h-2V6z" />
-        </svg>
-      </button>
-      <button type="button" class="play" aria-label="Play">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      </button>
-      <button type="button" aria-label="Next">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m10 6 8 6-8 6V6zm-2 0H6v12h2V6z" />
-        </svg>
-      </button>
-    </div>
-    <div class="player-extra">
-      <button type="button" (click)="toggleLike(song.id)" aria-label="Toggle like">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path [attr.fill]="song.is_liked ? 'currentColor' : 'none'"
-            [attr.stroke]="song.is_liked ? 'currentColor' : 'currentColor'"
-            [attr.stroke-width]="song.is_liked ? 0 : 1.5"
-            d="M12.1 8.64 12 8.77l-.1-.13C10.14 6.6 7.1 6.24 5.05 8.28c-2.06 2.04-2.06 5.36 0 7.4l6.23 6.23c.4.4 1.05.4 1.45 0l6.23-6.23c2.06-2.04 2.06-5.36 0-7.4-2.05-2.04-5.09-1.68-6.86.36Z" />
-        </svg>
-      </button>
+    } @else {
+    <div class="player-empty">
+      <p>Select a song to start playing</p>
     </div>
     }
   </footer>

@@ -486,8 +486,7 @@ export class BrowseComponent implements OnInit {
     }
 
     protected playSong(song: Song): void {
-        this.musicService.recordPlay(song.id);
-        // Add logic to play song
+        this.musicService.selectSong(song);
     }
 
     protected retry(): void {
