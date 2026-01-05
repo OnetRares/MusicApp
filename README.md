@@ -2,6 +2,8 @@
 
 A full-stack music streaming platform built with **Angular 21** and **Express.js**, featuring real-time audio playback via YouTube integration, playlist management, and user profiles.
 
+## Demo MusicApp
+https://youtu.be/GbRI5UQdaGw
 ## 🎵 Features
 
 - **YouTube-Integrated Audio Playback**: Stream 50 verified songs directly from YouTube with play/pause and track navigation controls
